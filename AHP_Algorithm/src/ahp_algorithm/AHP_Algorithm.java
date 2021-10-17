@@ -18,7 +18,7 @@ import org.apache.commons.math3.linear.RealVector;
 
 /**
  *
- * @author Lenovo
+ * @author Sergio
  */
 public class AHP_Algorithm extends javax.swing.JFrame {
     
@@ -157,6 +157,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
                 //YA SE HA TERMINADO TODAS LAS MATRICES A RELLENAR...TOCA CALCULAR 
                 System.out.println("NºMatrices de comparaciones de alternativas resp. criterios : "+vector_matrices_a_c.size());
                 System.out.println(vector_matrices_a_c);
+                interfaz.setVisible(true);
+                setVisible(false);
                 
             }
             contador_pasos++;          
@@ -283,16 +285,16 @@ public class AHP_Algorithm extends javax.swing.JFrame {
 
     }
     
+    
     private ArrayList<Double> calculaPesosAV(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
     
         //OBTENER LOS AUTOVALORES DE LA MATRIZ.
         double[][] values = new double[n_filas][n_columnas];
-        for (int i = 0; i < n_filas; i++) {
-            for (int j = 0; j < n_columnas; j++) {
-                System.out.println(matriz.get(i).get(j));
+        
+        for (int i = 0; i < n_filas; i++)
+            for (int j = 0; j < n_columnas; j++)
                 values[i][j] = matriz.get(i).get(j);
-            }
-        }
+
         RealMatrix matrix = MatrixUtils.createRealMatrix(values);
         EigenDecomposition descomposition = new EigenDecomposition(matrix);
         double[] eigenValues = descomposition.getRealEigenvalues(); //Obtenemos los autovalores
@@ -310,6 +312,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         //AHORA SE OBTIENE EL ÍNDICE DE CONSISTENCIA, TRAS HABER OBTENIDO EL MÁXIMO AUTOVALOR.
         CI = (maxAutoValor - matriz.size()) / (matriz.size() - 1); //Fórmula del CI.
         
+        //TODO: SEPARAR ESTO EN 2.
         
         //OBTENER EL AUTOVECTOR, A PARTIR DEL AUTOVALOR MÁXIMO OBTENIDO.
         autoVector = descomposition.getEigenvector(indice_AV_max);
@@ -324,8 +327,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         if (matriz.size() >= 3)
             CR = CI / CR_SAATY[matriz.size() - 3];
         System.out.println("CI = "+CI+" ------------ CR = "+CR);
-        //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
-        return v_pesos_norm;
+        
+        return v_pesos_norm; //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
     }
     
     private ArrayList<Double> normalizarPesos(ArrayList<Double> v_pesos) {
@@ -340,42 +343,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         return v_pesos;
     }
     
-//    private ArrayList<ArrayList<Double>> MatrizTraspuesta(ArrayList<ArrayList<Double>> matriz) {
-//        
-//        ArrayList<Double> v;
-//        ArrayList<ArrayList<Double>> traspuesta = new ArrayList<>();
-//
-//        for (int i = 0; i < matriz.size(); i++) {
-//            v = new ArrayList<>();
-//            for (int j = 0; j < matriz.get(i).size(); j++) 
-//                v.add(matriz.get(j).get(i));
-//            
-//            traspuesta.add(v);
-//        }
-//        return traspuesta;
-//    }
-    
-//    private void rellenaMatriz_DatosEntrada() {
-//        Double a;
-//        ArrayList<Double> vector_aux = new ArrayList<>();
-//        for (int i = 0; i < alternativas.size(); i++) {
-//            for (int j = 1; j < jTable1.getColumnCount(); j++) {
-//                System.out.println(jTable1.getValueAt(i, j));
-//                String e = jTable1.getValueAt(i, j).toString();
-//                if (e.contains("/")) {
-//                    String[] spl = e.split("/");
-//                    Double n1 = Double.parseDouble(spl[0]);
-//                    Double n2 = Double.parseDouble(spl[1]);
-//                    a = (n1 / n2);
-//                } else {
-//                    a = Double.parseDouble(e);
-//                }
-//                vector_aux.add(a);
-//            }
-//        }
-//        matriz_a_c.add(vector_aux);
-//
-//    }
     
     
 }

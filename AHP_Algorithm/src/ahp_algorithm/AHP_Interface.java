@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Lenovo
+ * @author Sergio
  */
 public class AHP_Interface extends javax.swing.JFrame {
     
