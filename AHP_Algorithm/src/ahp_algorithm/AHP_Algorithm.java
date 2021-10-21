@@ -49,13 +49,13 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             public void mouseClicked(final MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     jTable1 = (JTable) e.getSource();
-                    final int row = jTable1.getSelectedRow();
-                    final int column = jTable1.getSelectedColumn();
+                    final int fila = jTable1.getSelectedRow();
+                    final int columna = jTable1.getSelectedColumn();
 
-                    final String urObjctInCell = (String) jTable1.getValueAt(row, column);
+                    final String urObjctInCell = (String) jTable1.getValueAt(fila, columna);
                     
-                    if (jTable1.getValueAt(row, column) == null && jTable1.getValueAt(column - 1, row + 1) != null)
-                        jTable1.setValueAt("1/" + jTable1.getValueAt(column - 1, row + 1), row, column);
+                    if (jTable1.getValueAt(fila, columna) == null && jTable1.getValueAt(columna - 1, fila + 1) != null)
+                        jTable1.setValueAt("1/" + jTable1.getValueAt(columna - 1, fila + 1), fila, columna);
                     
                 }
             }
@@ -139,7 +139,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             ObtenerMatriz(matriz_c_c, criterios.size(), criterios.size());
             
             //Una vez termina de obtener la matriz, calcula el Wj.
-            pesosCriterios = calculaPesosAV(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
+            pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
             //System.out.println(pesosCriterios);
             contador_pasos++;
             generarMatriz(false);
@@ -149,7 +149,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             matriz_a_c.clear();
             ObtenerMatriz(matriz_a_c, alternativas.size(), alternativas.size());
             vector_matrices_a_c.add((ArrayList<ArrayList<Double>>) matriz_a_c.clone());
-            pesosCriterios = calculaPesosAV(matriz_a_c,matriz_a_c.size(), matriz_a_c.size());
+            pesosCriterios = calcula_pesos_CI_CR(matriz_a_c,matriz_a_c.size(), matriz_a_c.size());
             
             if (contador_pasos <= criterios.size())
                 generarMatriz(false); //SEGUIMOS AÑADIENDO RELACIONES DE PREFERENCIA ENTRE ALTERNATIVAS PARA UN CRITERIO...
@@ -157,8 +157,9 @@ public class AHP_Algorithm extends javax.swing.JFrame {
                 //YA SE HA TERMINADO TODAS LAS MATRICES A RELLENAR...TOCA CALCULAR 
                 System.out.println("NºMatrices de comparaciones de alternativas resp. criterios : "+vector_matrices_a_c.size());
                 System.out.println(vector_matrices_a_c);
+                interfaz.set_visibilidad_relaciones(false);
                 interfaz.setVisible(true);
-                setVisible(false);
+                dispose();
                 
             }
             contador_pasos++;          
@@ -166,7 +167,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         
         else //PARA REAJUSTAR AL RITMO QUE SE HACE CLICK EN EL BUTTON.
             contador_pasos++;
-        //System.out.println(contador_pasos);
     }//GEN-LAST:event_SIGUIENTEActionPerformed
     
     private void ObtenerMatriz(ArrayList<ArrayList<Double>> matriz, int filas, int columnas){
@@ -196,7 +196,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
            matriz.add(vector_aux);
         }
     }
-    
     
     
     /**
@@ -286,7 +285,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     }
     
     
-    private ArrayList<Double> calculaPesosAV(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
+    private ArrayList<Double> calcula_pesos_CI_CR(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
     
         //OBTENER LOS AUTOVALORES DE LA MATRIZ.
         double[][] values = new double[n_filas][n_columnas];
@@ -312,7 +311,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         //AHORA SE OBTIENE EL ÍNDICE DE CONSISTENCIA, TRAS HABER OBTENIDO EL MÁXIMO AUTOVALOR.
         CI = (maxAutoValor - matriz.size()) / (matriz.size() - 1); //Fórmula del CI.
         
-        //TODO: SEPARAR ESTO EN 2.
         
         //OBTENER EL AUTOVECTOR, A PARTIR DEL AUTOVALOR MÁXIMO OBTENIDO.
         autoVector = descomposition.getEigenvector(indice_AV_max);
@@ -342,7 +340,5 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         
         return v_pesos;
     }
-    
-    
     
 }
