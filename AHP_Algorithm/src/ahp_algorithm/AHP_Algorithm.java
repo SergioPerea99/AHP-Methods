@@ -30,7 +30,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private Integer contador_pasos;
     private ArrayList<Double> pesosCriterios;
     private Double CI, CR;
-    private ArrayList<Double> v_CR;
+    private ArrayList<Double> v_CI, v_CR;
     private RealVector autoVector;
     private Double[] CR_SAATY = {0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49}; 
     private Boolean ComparadosCriterios = false;
@@ -49,7 +49,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         ranking_alternativas = new ArrayList<>();
         contador_pasos = 0;
         CR = CI = -1.0;
-        v_CR = new ArrayList<>();
+        v_CI = v_CR = new ArrayList<>();
         
         initComponents();
         jTable1.addMouseListener(new MouseAdapter() {
@@ -147,7 +147,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             
             //Una vez termina de obtener la matriz, calcula el Wj.
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-            //System.out.println(pesosCriterios);
             contador_pasos++;
             generarMatriz(false);
         }
@@ -291,7 +290,11 @@ public class AHP_Algorithm extends javax.swing.JFrame {
 
     }
     
+    public ArrayList<Double> getV_CR() 
     
+    {
+        return v_CR;
+    }
     private ArrayList<Double> calcula_pesos_CI_CR(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
     
         //OBTENER LOS AUTOVALORES DE LA MATRIZ.
@@ -331,7 +334,9 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         
         if (matriz.size() >= 3)
             CR = CI / CR_SAATY[matriz.size() - 3];
-        System.out.println("CI = "+CI+" ------------ CR = "+CR);
+        else
+            CR = CI / CR_SAATY[0];
+        v_CI.add(CI);
         v_CR.add(CR);
         return v_pesos_norm; //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
     }
@@ -418,6 +423,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c);
     }
     
+    public void metodo_autoValor(){
+        //TODO: MÉTODO POR HACER...
+    }
+    
     private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c) {
         ranking_alternativas.clear();
         ArrayList<Double> ranking_alternativas = new ArrayList<>();
@@ -457,8 +466,5 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         return ranking_alternativas;
     }
 
-    public ArrayList<Double> getV_CR() {
-        return v_CR;
-    }
-
+    
 }

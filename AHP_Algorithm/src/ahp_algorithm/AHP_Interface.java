@@ -204,8 +204,9 @@ public class AHP_Interface extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // MÉTODO DE LOS AUTO-VALORES.
-        
-        
+        jTextArea1.removeAll();
+        algoritmo.metodo_autoValor();
+        mostrarResultado();
         
     }//GEN-LAST:event_jButton4ActionPerformed
 
