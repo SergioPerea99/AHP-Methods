@@ -191,16 +191,14 @@ public class AHP_Interface extends javax.swing.JFrame {
         // MÉTODO DE LA APROXIMACIÓN.
         jTextArea1.removeAll();
         algoritmo.metodo_aproximacion();
-        String mostrar = "RANKING DE LAS ALTERNATIVAS: \n\n.";
-        for (int i = 0; i < algoritmo.getRanking_alternativas().size(); i++)
-            mostrar += (i+1)+" --> "+algoritmo.getRanking_alternativas().get(i)+".\n\n";
-        jTextArea1.setText(mostrar);
-        jTextArea1.setVisible(true);
+        mostrarResultado();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // MÉTODO DE LA MEDIA GEOMÉTRICA.
-        
+        jTextArea1.removeAll();
+        algoritmo.metodo_mediaGeometrica();
+        mostrarResultado();
         
     }//GEN-LAST:event_jButton3ActionPerformed
 
@@ -321,4 +319,19 @@ public class AHP_Interface extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
+
+    private void mostrarResultado() {
+        String mostrar = "RANKING DE LAS ALTERNATIVAS: \n\n.";
+        for (int i = 0; i < algoritmo.getRanking_alternativas().size(); i++)
+            mostrar += (i+1)+" --> "+algoritmo.getRanking_alternativas().get(i)+".\n\n";
+        mostrar += "¿SON VÁLIDOS LOS RESULTADOS?\n\n";
+        mostrar += "CR de las matrices: [ ";
+        for (int i = 0; i < 1+criterios.size(); i++) {
+            mostrar += algoritmo.getV_CR().get(i).toString();
+            if (i < criterios.size()) mostrar += ", ";
+            else mostrar += "].\n\n";
+        }
+        jTextArea1.setText(mostrar);
+        jTextArea1.setVisible(true);
+    }
 }

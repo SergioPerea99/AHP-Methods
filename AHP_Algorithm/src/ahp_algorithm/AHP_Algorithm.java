@@ -30,6 +30,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private Integer contador_pasos;
     private ArrayList<Double> pesosCriterios;
     private Double CI, CR;
+    private ArrayList<Double> v_CR;
     private RealVector autoVector;
     private Double[] CR_SAATY = {0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49}; 
     private Boolean ComparadosCriterios = false;
@@ -48,6 +49,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         ranking_alternativas = new ArrayList<>();
         contador_pasos = 0;
         CR = CI = -1.0;
+        v_CR = new ArrayList<>();
         
         initComponents();
         jTable1.addMouseListener(new MouseAdapter() {
@@ -140,7 +142,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         // TODO add your handling code here:
         
         if (contador_pasos == 0){ //SE TIENE QUE RELLENAR LA MATRIZ DE COMPARACIÓN DE CRITERIOS
-
+            v_CR.clear();
             ObtenerMatriz(matriz_c_c, criterios.size(), criterios.size());
             
             //Una vez termina de obtener la matriz, calcula el Wj.
@@ -330,7 +332,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         if (matriz.size() >= 3)
             CR = CI / CR_SAATY[matriz.size() - 3];
         System.out.println("CI = "+CI+" ------------ CR = "+CR);
-        
+        v_CR.add(CR);
         return v_pesos_norm; //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
     }
     
@@ -379,7 +381,43 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
         obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c);
     }
-
+    
+    public void metodo_mediaGeometrica(){
+        
+        //VARIABLES DE USO GENERAL.
+        Double producto_pesos;
+        
+        //1. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRIZ DE COMPARACIÓN ENTRE CRITERIOS.
+        ArrayList<Double> v_pesos_c_c = new ArrayList<>();
+        for (int i = 0; i < criterios.size(); i++) {
+            producto_pesos = 1.0;
+            for (int j = 0; j < criterios.size(); j++) //Para cada fila, se suma los pesos de toda las columnas.
+                producto_pesos *= matriz_c_c.get(i).get(j);
+            producto_pesos = (double) Math.pow(producto_pesos, ((double) 1 / (double)criterios.size())); //Aplicamos la raiz n-ésima, siendo n = nºcriterios.
+            v_pesos_c_c.add(producto_pesos); //Se añade al vector de pesos.
+        }
+        ArrayList<Double> v_pesos_norm_c_c = normalizarPesos(v_pesos_c_c);
+        
+        //2. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRICES DE COMPARACIÓN DE ALTERNATIVAS PARA CADA CRITERIO.
+        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
+        ArrayList<Double> v_pesos_a_c, v_pesos_norm_a_c;
+        for (int a = 0; a < alternativas.size(); a++) {
+            v_pesos_a_c= new ArrayList<>();
+            for (int c = 0; c < criterios.size(); c++) {
+                producto_pesos = 1.0;
+                for (int j = 0; j < alternativas.size(); j++)
+                    producto_pesos *= vector_matrices_a_c.get(c).get(a).get(j);
+                producto_pesos = (double) Math.pow(producto_pesos, (double)(1.0 / alternativas.size())); //Aplicamos la raiz n-ésima, siendo n = nºalternativas.
+                v_pesos_a_c.add(producto_pesos);
+            }
+            v_pesos_norm_a_c = normalizarPesos(v_pesos_a_c);
+            matriz_pesos_norm_a_c.add(v_pesos_norm_a_c);
+        }
+        
+        //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
+        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c);
+    }
+    
     private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c) {
         ranking_alternativas.clear();
         ArrayList<Double> ranking_alternativas = new ArrayList<>();
@@ -400,7 +438,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         int pos;
         for (int a = 0; a < ranking_alternativas.size(); a++) { 
             max_valor = -1.0;
-            pos = -1;
+            pos = -1; 
             for (int i = 0; i < ranking_alternativas.size(); i++) {
                 if (ranking_alternativas.get(i) > max_valor){
                     max_valor = ranking_alternativas.get(i);
@@ -414,11 +452,13 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         System.out.println(this.ranking_alternativas);
         
     }
-
+    
     public ArrayList<String> getRanking_alternativas() {
         return ranking_alternativas;
     }
-    
-    
-    
+
+    public ArrayList<Double> getV_CR() {
+        return v_CR;
+    }
+
 }
