@@ -290,11 +290,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
 
     }
     
-    public ArrayList<Double> getV_CR() 
-    
-    {
+    public ArrayList<Double> getV_CR() {
         return v_CR;
     }
+    
     private ArrayList<Double> calcula_pesos_CI_CR(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
     
         //OBTENER LOS AUTOVALORES DE LA MATRIZ.
@@ -329,13 +328,12 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         for (int i = 0; i < _autoVector.length; i++) 
             vector_pesos.add(_autoVector[i]);
         
-        //NORMALIZAR EL AUTOVECTOR.
+        //NORMALIZAR EL AUTOVECTOR. --> NO HABRÍA PORQUÉ NORMALIZARLO.
         ArrayList<Double> v_pesos_norm = normalizarPesos(vector_pesos);
         
         if (matriz.size() >= 3)
-            CR = CI / CR_SAATY[matriz.size() - 3];
-        else
-            CR = CI / CR_SAATY[0];
+            CR = CI / CR_SAATY[matriz.size() - 3]; //SI ES MENOR QUE 3 --> NO PUEDE EXISTIR INCONSISTENCIA.
+        
         v_CI.add(CI);
         v_CR.add(CR);
         return v_pesos_norm; //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
@@ -384,7 +382,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         }
         
         //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
-        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c);
+        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c, false);
     }
     
     public void metodo_mediaGeometrica(){
@@ -420,23 +418,32 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         }
         
         //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
-        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c);
+        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c, false);
     }
     
     public void metodo_autoValor(){
-        //TODO: MÉTODO POR HACER...
+        ArrayList<Double> v_pesos_c_c = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
+        System.out.println(v_pesos_c_c);
+        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
+        for (int i = 0; i < criterios.size(); i++)
+            matriz_pesos_norm_a_c.add(calcula_pesos_CI_CR(vector_matrices_a_c.get(i), alternativas.size(), alternativas.size()));
+        System.out.println(matriz_pesos_norm_a_c);
+        obtenerRanking(v_pesos_c_c, matriz_pesos_norm_a_c, true);
     }
     
-    private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c) {
+    private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c, Boolean metodo_autovalor) {
         ranking_alternativas.clear();
         ArrayList<Double> ranking_alternativas = new ArrayList<>();
         Double sum;
-        
         //OBTENER VALORES DEL RANKING
         for (int a = 0; a < alternativas.size(); a++) {
-            sum = 0.d;
-            for (int c = 0; c < criterios.size(); c++) {
-                sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(a).get(c);
+            sum = 0.0;
+            if(!metodo_autovalor){
+                for (int c = 0; c < criterios.size(); c++)
+                    sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(a).get(c);
+            }else{
+                for (int c = 0; c < criterios.size(); c++)
+                    sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(c).get(a);
             }
             ranking_alternativas.add(sum);
         }

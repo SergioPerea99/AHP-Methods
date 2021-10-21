@@ -116,7 +116,7 @@ public class AHP_Interface extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(jButton2)
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                                .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton4))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
@@ -131,12 +131,11 @@ public class AHP_Interface extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(77, 77, 77)
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -159,8 +158,8 @@ public class AHP_Interface extends javax.swing.JFrame {
                     .addComponent(jButton3)
                     .addComponent(jButton4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
-                .addGap(25, 25, 25))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -322,6 +321,7 @@ public class AHP_Interface extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void mostrarResultado() {
+        Boolean inconsistente = false;
         String mostrar = "RANKING DE LAS ALTERNATIVAS: \n\n.";
         for (int i = 0; i < algoritmo.getRanking_alternativas().size(); i++)
             mostrar += (i+1)+" --> "+algoritmo.getRanking_alternativas().get(i)+".\n\n";
@@ -329,9 +329,18 @@ public class AHP_Interface extends javax.swing.JFrame {
         mostrar += "CR de las matrices: [ ";
         for (int i = 0; i < 1+criterios.size(); i++) {
             mostrar += algoritmo.getV_CR().get(i).toString();
+            
             if (i < criterios.size()) mostrar += ", ";
             else mostrar += "].\n\n";
+            
+            if(algoritmo.getV_CR().get(i) > 0.1) inconsistente = true;
         }
+        
+        if(inconsistente)
+            mostrar += "EL PROBLEMA ES INCONSISTENTE YA QUE, AL MENOS, UNA DE LAS MATRICES SUPERA UN RATIO DE CONSISTENCIA > 0.1.\n\n";
+        else
+            mostrar += "EL PROBLEMA ES SUFICIENTEMENTE CONSISTENTE (TODOS LOS CR < 0.1).";
+        
         jTextArea1.setText(mostrar);
         jTextArea1.setVisible(true);
     }
