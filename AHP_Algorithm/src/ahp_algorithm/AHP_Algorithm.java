@@ -33,6 +33,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private RealVector autoVector;
     private Double[] CR_SAATY = {0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49}; 
     private Boolean ComparadosCriterios = false;
+    
+    //ATRIBUTO FINAL
+    private ArrayList<String> ranking_alternativas;
+    
     /**
      * Creates new form AHP_Algorithm
      */
@@ -41,6 +45,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         matriz_c_c = new ArrayList<>();
         vector_matrices_a_c = new ArrayList<ArrayList<ArrayList<Double>>>();
         pesosCriterios = new ArrayList<>();
+        ranking_alternativas = new ArrayList<>();
         contador_pasos = 0;
         CR = CI = -1.0;
         
@@ -330,15 +335,90 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     }
     
     private ArrayList<Double> normalizarPesos(ArrayList<Double> v_pesos) {
-        Double sumW = 0.d;
-
+        Double sum = 0.0;
         for (int i = 0; i < v_pesos.size(); i++)
-            sumW += v_pesos.get(i);
+            sum += v_pesos.get(i);
         
         for (int i = 0; i < v_pesos.size(); i++)
-            v_pesos.set(i, v_pesos.get(i) / sumW);
+            v_pesos.set(i, v_pesos.get(i) / sum);
         
         return v_pesos;
     }
+    
+    public void metodo_aproximacion(){
+        
+        //VARIABLES DE USO GENERAL.
+        Double suma_pesos;
+        
+        //1. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRIZ DE COMPARACIÓN ENTRE CRITERIOS.
+        ArrayList<Double> v_pesos_c_c = new ArrayList<>();
+        for (int i = 0; i < matriz_c_c.size(); i++) {
+            suma_pesos = 0.0;
+            for (int j = 0; j < matriz_c_c.size(); j++) //Para cada fila, se suma los pesos de toda las columnas.
+                suma_pesos += matriz_c_c.get(i).get(j);
+            v_pesos_c_c.add(suma_pesos); //Se añade esa suma de pesos al vector de pesos.
+        }
+        ArrayList<Double> v_pesos_norm_c_c = normalizarPesos(v_pesos_c_c);
+        
+        //2. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRICES DE COMPARACIÓN DE ALTERNATIVAS PARA CADA CRITERIO.
+        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
+        ArrayList<Double> v_pesos_a_c, v_pesos_norm_a_c;
+        for (int a = 0; a < alternativas.size(); a++) {
+            v_pesos_a_c= new ArrayList<>();
+            for (int c = 0; c < criterios.size(); c++) {
+                suma_pesos = 0.0;
+                for (int j = 0; j < alternativas.size(); j++)
+                    suma_pesos += vector_matrices_a_c.get(c).get(a).get(j);
+                
+                v_pesos_a_c.add(suma_pesos);
+            }
+            v_pesos_norm_a_c = normalizarPesos(v_pesos_a_c);
+            matriz_pesos_norm_a_c.add(v_pesos_norm_a_c);
+        }
+        
+        //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
+        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c);
+    }
+
+    private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c) {
+        ranking_alternativas.clear();
+        ArrayList<Double> ranking_alternativas = new ArrayList<>();
+        Double sum;
+        
+        //OBTENER VALORES DEL RANKING
+        for (int a = 0; a < alternativas.size(); a++) {
+            sum = 0.d;
+            for (int c = 0; c < criterios.size(); c++) {
+                sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(a).get(c);
+            }
+            ranking_alternativas.add(sum);
+        }
+        System.out.println(ranking_alternativas);
+        
+        //ORDENAR EL RANKING --> AL SER POCAS ALTERNATIVAS HACEMOS MÉTODO BURBUJA (n^2)
+        Double max_valor;
+        int pos;
+        for (int a = 0; a < ranking_alternativas.size(); a++) { 
+            max_valor = -1.0;
+            pos = -1;
+            for (int i = 0; i < ranking_alternativas.size(); i++) {
+                if (ranking_alternativas.get(i) > max_valor){
+                    max_valor = ranking_alternativas.get(i);
+                    pos = i;
+                }  
+            }
+            this.ranking_alternativas.add(alternativas.get(pos));
+            ranking_alternativas.set(pos, -1.0); //ANULO EL VALOR DE RANKING DE LA ALTERNATIVA QUE SE ACABA DE ESCOGER.
+        }
+        
+        System.out.println(this.ranking_alternativas);
+        
+    }
+
+    public ArrayList<String> getRanking_alternativas() {
+        return ranking_alternativas;
+    }
+    
+    
     
 }
