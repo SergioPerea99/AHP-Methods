@@ -49,7 +49,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         ranking_alternativas = new ArrayList<>();
         contador_pasos = 0;
         CR = CI = -1.0;
-        v_CI = v_CR = new ArrayList<>();
+        v_CI = new ArrayList<>();
+        v_CR = new ArrayList<>();
         
         initComponents();
         jTable1.addMouseListener(new MouseAdapter() {
@@ -291,6 +292,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     
     public ArrayList<Double> getV_CR() {
         return v_CR;
+    }
+    
+    public ArrayList<Double> getV_CI(){
+        return v_CI;
     }
     
     private ArrayList<Double> calcula_pesos_CI_CR(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){

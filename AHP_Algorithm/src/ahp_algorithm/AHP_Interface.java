@@ -326,6 +326,16 @@ public class AHP_Interface extends javax.swing.JFrame {
         for (int i = 0; i < algoritmo.getRanking_alternativas().size(); i++)
             mostrar += (i+1)+" --> "+algoritmo.getRanking_alternativas().get(i)+".\n\n";
         mostrar += "¿SON VÁLIDOS LOS RESULTADOS?\n\n";
+        mostrar += "CI de las matrices: [ ";
+        for (int i = 0; i < 1+criterios.size(); i++) {
+            mostrar += algoritmo.getV_CI().get(i).toString();
+            
+            if (i < criterios.size()) mostrar += ", ";
+            else mostrar += "].\n\n";
+            
+            if(algoritmo.getV_CR().get(i) > 0.1) inconsistente = true;
+        }
+        
         mostrar += "CR de las matrices: [ ";
         for (int i = 0; i < 1+criterios.size(); i++) {
             mostrar += algoritmo.getV_CR().get(i).toString();
