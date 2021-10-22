@@ -18,7 +18,7 @@ import org.apache.commons.math3.linear.RealVector;
 
 /**
  *
- * @author Lenovo
+ * @author Sergio
  */
 public class AHP_Algorithm extends javax.swing.JFrame {
     
@@ -30,9 +30,14 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private Integer contador_pasos;
     private ArrayList<Double> pesosCriterios;
     private Double CI, CR;
+    private ArrayList<Double> v_CI, v_CR;
     private RealVector autoVector;
     private Double[] CR_SAATY = {0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49}; 
     private Boolean ComparadosCriterios = false;
+    
+    //ATRIBUTO FINAL
+    private ArrayList<String> ranking_alternativas;
+    
     /**
      * Creates new form AHP_Algorithm
      */
@@ -41,21 +46,23 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         matriz_c_c = new ArrayList<>();
         vector_matrices_a_c = new ArrayList<ArrayList<ArrayList<Double>>>();
         pesosCriterios = new ArrayList<>();
+        ranking_alternativas = new ArrayList<>();
         contador_pasos = 0;
         CR = CI = -1.0;
+        v_CI = v_CR = new ArrayList<>();
         
         initComponents();
         jTable1.addMouseListener(new MouseAdapter() {
             public void mouseClicked(final MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     jTable1 = (JTable) e.getSource();
-                    final int row = jTable1.getSelectedRow();
-                    final int column = jTable1.getSelectedColumn();
+                    final int fila = jTable1.getSelectedRow();
+                    final int columna = jTable1.getSelectedColumn();
 
-                    final String urObjctInCell = (String) jTable1.getValueAt(row, column);
+                    final String urObjctInCell = (String) jTable1.getValueAt(fila, columna);
                     
-                    if (jTable1.getValueAt(row, column) == null && jTable1.getValueAt(column - 1, row + 1) != null)
-                        jTable1.setValueAt("1/" + jTable1.getValueAt(column - 1, row + 1), row, column);
+                    if (jTable1.getValueAt(fila, columna) == null && jTable1.getValueAt(columna - 1, fila + 1) != null)
+                        jTable1.setValueAt("1/" + jTable1.getValueAt(columna - 1, fila + 1), fila, columna);
                     
                 }
             }
@@ -109,14 +116,13 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(47, 47, 47)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(165, 165, 165)
-                        .addComponent(SIGUIENTE, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(165, Short.MAX_VALUE)
+                .addComponent(SIGUIENTE, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(162, 162, 162))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,8 +130,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
                 .addGap(25, 25, 25)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(SIGUIENTE, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                .addGap(26, 26, 26))
+                .addComponent(SIGUIENTE, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -135,28 +141,30 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         // TODO add your handling code here:
         
         if (contador_pasos == 0){ //SE TIENE QUE RELLENAR LA MATRIZ DE COMPARACIÓN DE CRITERIOS
-
+            v_CR.clear();
             ObtenerMatriz(matriz_c_c, criterios.size(), criterios.size());
             
             //Una vez termina de obtener la matriz, calcula el Wj.
-            pesosCriterios = calculaPesosAV(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-            //System.out.println(pesosCriterios);
+            pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
             contador_pasos++;
-            generarMatriz(false);
+            generarMatriz(false, criterios.get(contador_pasos));
         }
         
         if (contador_pasos > 1){ //SE TIENE QUE RELLENAR EN BUCLE LAS MATRICES DE COMPARACIÓN DE TODAS LAS ALTERNATIVAS RESPECTO A UN CRITERIO
             matriz_a_c.clear();
             ObtenerMatriz(matriz_a_c, alternativas.size(), alternativas.size());
             vector_matrices_a_c.add((ArrayList<ArrayList<Double>>) matriz_a_c.clone());
-            pesosCriterios = calculaPesosAV(matriz_a_c,matriz_a_c.size(), matriz_a_c.size());
+            pesosCriterios = calcula_pesos_CI_CR(matriz_a_c,matriz_a_c.size(), matriz_a_c.size());
             
             if (contador_pasos <= criterios.size())
-                generarMatriz(false); //SEGUIMOS AÑADIENDO RELACIONES DE PREFERENCIA ENTRE ALTERNATIVAS PARA UN CRITERIO...
+                generarMatriz(false, criterios.get(contador_pasos-1)); //SEGUIMOS AÑADIENDO RELACIONES DE PREFERENCIA ENTRE ALTERNATIVAS PARA UN CRITERIO...
             else{
                 //YA SE HA TERMINADO TODAS LAS MATRICES A RELLENAR...TOCA CALCULAR 
                 System.out.println("NºMatrices de comparaciones de alternativas resp. criterios : "+vector_matrices_a_c.size());
                 System.out.println(vector_matrices_a_c);
+                interfaz.set_visibilidad_relaciones(false);
+                interfaz.setVisible(true);
+                dispose();
                 
             }
             contador_pasos++;          
@@ -164,7 +172,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         
         else //PARA REAJUSTAR AL RITMO QUE SE HACE CLICK EN EL BUTTON.
             contador_pasos++;
-        //System.out.println(contador_pasos);
     }//GEN-LAST:event_SIGUIENTEActionPerformed
     
     private void ObtenerMatriz(ArrayList<ArrayList<Double>> matriz, int filas, int columnas){
@@ -194,7 +201,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
            matriz.add(vector_aux);
         }
     }
-    
     
     
     /**
@@ -238,11 +244,11 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
     
-    public void generarMatriz(boolean compara_criterios) {
+    public void generarMatriz(boolean compara_criterios, String nombre_tabla) {
         
         if (compara_criterios) { //Comprobar si es para generar la matriz de comparación entre criterios.
             DefaultTableModel tabla_auxiliar = new DefaultTableModel();
-            tabla_auxiliar.addColumn("");
+            tabla_auxiliar.addColumn(nombre_tabla);
 
             for (int i = 0; i < criterios.size(); i++)
                 tabla_auxiliar.addColumn(criterios.get(i));
@@ -262,7 +268,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         } else { //Matriz de alternativas por cada uno de los criterios.
             
             DefaultTableModel tabla_auxiliar = new DefaultTableModel();
-            tabla_auxiliar.addColumn("");
+            tabla_auxiliar.addColumn(nombre_tabla);
 
             for (int i = 0; i < alternativas.size(); i++)
                 tabla_auxiliar.addColumn(alternativas.get(i));
@@ -283,16 +289,19 @@ public class AHP_Algorithm extends javax.swing.JFrame {
 
     }
     
-    private ArrayList<Double> calculaPesosAV(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
+    public ArrayList<Double> getV_CR() {
+        return v_CR;
+    }
+    
+    private ArrayList<Double> calcula_pesos_CI_CR(ArrayList<ArrayList<Double>> matriz,int n_filas, int n_columnas){
     
         //OBTENER LOS AUTOVALORES DE LA MATRIZ.
         double[][] values = new double[n_filas][n_columnas];
-        for (int i = 0; i < n_filas; i++) {
-            for (int j = 0; j < n_columnas; j++) {
-                System.out.println(matriz.get(i).get(j));
+        
+        for (int i = 0; i < n_filas; i++)
+            for (int j = 0; j < n_columnas; j++)
                 values[i][j] = matriz.get(i).get(j);
-            }
-        }
+
         RealMatrix matrix = MatrixUtils.createRealMatrix(values);
         EigenDecomposition descomposition = new EigenDecomposition(matrix);
         double[] eigenValues = descomposition.getRealEigenvalues(); //Obtenemos los autovalores
@@ -317,65 +326,148 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         ArrayList<Double> vector_pesos = new ArrayList<>();
         for (int i = 0; i < _autoVector.length; i++) 
             vector_pesos.add(_autoVector[i]);
-        
-        //NORMALIZAR EL AUTOVECTOR.
+        //NORMALIZAR EL AUTOVECTOR. --> NO HABRÍA PORQUÉ NORMALIZARLO.
         ArrayList<Double> v_pesos_norm = normalizarPesos(vector_pesos);
         
         if (matriz.size() >= 3)
-            CR = CI / CR_SAATY[matriz.size() - 3];
-        System.out.println("CI = "+CI+" ------------ CR = "+CR);
-        //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
-        return v_pesos_norm;
+            CR = CI / CR_SAATY[matriz.size() - 3]; //SI ES MENOR QUE 3 --> NO PUEDE EXISTIR INCONSISTENCIA.
+        
+        v_CI.add(CI);
+        v_CR.add(CR);
+        return v_pesos_norm; //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
     }
     
     private ArrayList<Double> normalizarPesos(ArrayList<Double> v_pesos) {
-        Double sumW = 0.d;
-
+        Double sum = 0.0;
         for (int i = 0; i < v_pesos.size(); i++)
-            sumW += v_pesos.get(i);
+            sum += v_pesos.get(i);
         
         for (int i = 0; i < v_pesos.size(); i++)
-            v_pesos.set(i, v_pesos.get(i) / sumW);
+            v_pesos.set(i, v_pesos.get(i) / sum);
         
         return v_pesos;
     }
     
-//    private ArrayList<ArrayList<Double>> MatrizTraspuesta(ArrayList<ArrayList<Double>> matriz) {
-//        
-//        ArrayList<Double> v;
-//        ArrayList<ArrayList<Double>> traspuesta = new ArrayList<>();
-//
-//        for (int i = 0; i < matriz.size(); i++) {
-//            v = new ArrayList<>();
-//            for (int j = 0; j < matriz.get(i).size(); j++) 
-//                v.add(matriz.get(j).get(i));
-//            
-//            traspuesta.add(v);
-//        }
-//        return traspuesta;
-//    }
+    public void metodo_aproximacion(){
+        
+        //VARIABLES DE USO GENERAL.
+        Double suma_pesos;
+        
+        //1. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRIZ DE COMPARACIÓN ENTRE CRITERIOS.
+        ArrayList<Double> v_pesos_c_c = new ArrayList<>();
+        for (int i = 0; i < matriz_c_c.size(); i++) {
+            suma_pesos = 0.0;
+            for (int j = 0; j < matriz_c_c.size(); j++) //Para cada fila, se suma los pesos de toda las columnas.
+                suma_pesos += matriz_c_c.get(i).get(j);
+            v_pesos_c_c.add(suma_pesos); //Se añade esa suma de pesos al vector de pesos.
+        }
+        ArrayList<Double> v_pesos_norm_c_c = normalizarPesos(v_pesos_c_c);
+        
+        //2. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRICES DE COMPARACIÓN DE ALTERNATIVAS PARA CADA CRITERIO.
+        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
+        ArrayList<Double> v_pesos_a_c, v_pesos_norm_a_c;
+        for (int a = 0; a < alternativas.size(); a++) {
+            v_pesos_a_c= new ArrayList<>();
+            for (int c = 0; c < criterios.size(); c++) {
+                suma_pesos = 0.0;
+                for (int j = 0; j < alternativas.size(); j++)
+                    suma_pesos += vector_matrices_a_c.get(c).get(a).get(j);
+                
+                v_pesos_a_c.add(suma_pesos);
+            }
+            v_pesos_norm_a_c = normalizarPesos(v_pesos_a_c);
+            matriz_pesos_norm_a_c.add(v_pesos_norm_a_c);
+        }
+        
+        //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
+        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c, false);
+    }
     
-//    private void rellenaMatriz_DatosEntrada() {
-//        Double a;
-//        ArrayList<Double> vector_aux = new ArrayList<>();
-//        for (int i = 0; i < alternativas.size(); i++) {
-//            for (int j = 1; j < jTable1.getColumnCount(); j++) {
-//                System.out.println(jTable1.getValueAt(i, j));
-//                String e = jTable1.getValueAt(i, j).toString();
-//                if (e.contains("/")) {
-//                    String[] spl = e.split("/");
-//                    Double n1 = Double.parseDouble(spl[0]);
-//                    Double n2 = Double.parseDouble(spl[1]);
-//                    a = (n1 / n2);
-//                } else {
-//                    a = Double.parseDouble(e);
-//                }
-//                vector_aux.add(a);
-//            }
-//        }
-//        matriz_a_c.add(vector_aux);
-//
-//    }
+    public void metodo_mediaGeometrica(){
+        
+        //VARIABLES DE USO GENERAL.
+        Double producto_pesos;
+        
+        //1. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRIZ DE COMPARACIÓN ENTRE CRITERIOS.
+        ArrayList<Double> v_pesos_c_c = new ArrayList<>();
+        for (int i = 0; i < criterios.size(); i++) {
+            producto_pesos = 1.0;
+            for (int j = 0; j < criterios.size(); j++) //Para cada fila, se suma los pesos de toda las columnas.
+                producto_pesos *= matriz_c_c.get(i).get(j);
+            producto_pesos = (double) Math.pow(producto_pesos, ((double) 1 / (double)criterios.size())); //Aplicamos la raiz n-ésima, siendo n = nºcriterios.
+            v_pesos_c_c.add(producto_pesos); //Se añade al vector de pesos.
+        }
+        ArrayList<Double> v_pesos_norm_c_c = normalizarPesos(v_pesos_c_c);
+        
+        //2. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRICES DE COMPARACIÓN DE ALTERNATIVAS PARA CADA CRITERIO.
+        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
+        ArrayList<Double> v_pesos_a_c, v_pesos_norm_a_c;
+        for (int a = 0; a < alternativas.size(); a++) {
+            v_pesos_a_c= new ArrayList<>();
+            for (int c = 0; c < criterios.size(); c++) {
+                producto_pesos = 1.0;
+                for (int j = 0; j < alternativas.size(); j++)
+                    producto_pesos *= vector_matrices_a_c.get(c).get(a).get(j);
+                producto_pesos = (double) Math.pow(producto_pesos, (double)(1.0 / alternativas.size())); //Aplicamos la raiz n-ésima, siendo n = nºalternativas.
+                v_pesos_a_c.add(producto_pesos);
+            }
+            v_pesos_norm_a_c = normalizarPesos(v_pesos_a_c);
+            matriz_pesos_norm_a_c.add(v_pesos_norm_a_c);
+        }
+        
+        //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
+        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c, false);
+    }
     
+    public void metodo_autoValor(){
+        ArrayList<Double> v_pesos_c_c = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
+        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
+        for (int i = 0; i < criterios.size(); i++)
+            matriz_pesos_norm_a_c.add(calcula_pesos_CI_CR(vector_matrices_a_c.get(i), alternativas.size(), alternativas.size()));
+        obtenerRanking(v_pesos_c_c, matriz_pesos_norm_a_c, true);
+    }
+    
+    private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c, Boolean metodo_autovalor) {
+        ranking_alternativas.clear();
+        ArrayList<Double> ranking_alternativas = new ArrayList<>();
+        Double sum;
+        //OBTENER VALORES DEL RANKING
+        for (int a = 0; a < alternativas.size(); a++) {
+            sum = 0.0;
+            if(!metodo_autovalor){
+                for (int c = 0; c < criterios.size(); c++)
+                    sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(a).get(c);
+            }else{
+                for (int c = 0; c < criterios.size(); c++)
+                    sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(c).get(a);
+            }
+            ranking_alternativas.add(sum);
+        }
+        System.out.println(ranking_alternativas);
+        
+        //ORDENAR EL RANKING --> AL SER POCAS ALTERNATIVAS HACEMOS MÉTODO BURBUJA (n^2)
+        Double max_valor;
+        int pos;
+        for (int a = 0; a < ranking_alternativas.size(); a++) { 
+            max_valor = -1.0;
+            pos = -1; 
+            for (int i = 0; i < ranking_alternativas.size(); i++) {
+                if (ranking_alternativas.get(i) > max_valor){
+                    max_valor = ranking_alternativas.get(i);
+                    pos = i;
+                }  
+            }
+            this.ranking_alternativas.add(alternativas.get(pos));
+            ranking_alternativas.set(pos, -1.0); //ANULO EL VALOR DE RANKING DE LA ALTERNATIVA QUE SE ACABA DE ESCOGER.
+        }
+        
+        System.out.println(this.ranking_alternativas);
+        
+    }
+    
+    public ArrayList<String> getRanking_alternativas() {
+        return ranking_alternativas;
+    }
+
     
 }
