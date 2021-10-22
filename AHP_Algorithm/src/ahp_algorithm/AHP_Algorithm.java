@@ -147,8 +147,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             
             //Una vez termina de obtener la matriz, calcula el Wj.
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-            contador_pasos++;
             generarMatriz(false, criterios.get(contador_pasos));
+            contador_pasos++;
         }
         
         if (contador_pasos > 1){ //SE TIENE QUE RELLENAR EN BUCLE LAS MATRICES DE COMPARACIÓN DE TODAS LAS ALTERNATIVAS RESPECTO A UN CRITERIO
