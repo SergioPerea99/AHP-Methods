@@ -179,7 +179,7 @@ public class AHP_Interface extends javax.swing.JFrame {
         
         algoritmo = new AHP_Algorithm();
         algoritmo.setAHP(this, alternativas, criterios);
-        algoritmo.generarMatriz(true);
+        algoritmo.generarMatriz(true,"CRITERIOS");
         
         algoritmo.setVisible(true);
         dispose();

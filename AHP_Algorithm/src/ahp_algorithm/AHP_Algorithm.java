@@ -116,14 +116,13 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(47, 47, 47)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(165, 165, 165)
-                        .addComponent(SIGUIENTE, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(165, Short.MAX_VALUE)
+                .addComponent(SIGUIENTE, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(162, 162, 162))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -131,8 +130,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
                 .addGap(25, 25, 25)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(SIGUIENTE, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                .addGap(26, 26, 26))
+                .addComponent(SIGUIENTE, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -148,7 +147,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             //Una vez termina de obtener la matriz, calcula el Wj.
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
             contador_pasos++;
-            generarMatriz(false);
+            generarMatriz(false, criterios.get(contador_pasos));
         }
         
         if (contador_pasos > 1){ //SE TIENE QUE RELLENAR EN BUCLE LAS MATRICES DE COMPARACIÓN DE TODAS LAS ALTERNATIVAS RESPECTO A UN CRITERIO
@@ -158,7 +157,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             pesosCriterios = calcula_pesos_CI_CR(matriz_a_c,matriz_a_c.size(), matriz_a_c.size());
             
             if (contador_pasos <= criterios.size())
-                generarMatriz(false); //SEGUIMOS AÑADIENDO RELACIONES DE PREFERENCIA ENTRE ALTERNATIVAS PARA UN CRITERIO...
+                generarMatriz(false, criterios.get(contador_pasos-1)); //SEGUIMOS AÑADIENDO RELACIONES DE PREFERENCIA ENTRE ALTERNATIVAS PARA UN CRITERIO...
             else{
                 //YA SE HA TERMINADO TODAS LAS MATRICES A RELLENAR...TOCA CALCULAR 
                 System.out.println("NºMatrices de comparaciones de alternativas resp. criterios : "+vector_matrices_a_c.size());
@@ -245,11 +244,11 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
     
-    public void generarMatriz(boolean compara_criterios) {
+    public void generarMatriz(boolean compara_criterios, String nombre_tabla) {
         
         if (compara_criterios) { //Comprobar si es para generar la matriz de comparación entre criterios.
             DefaultTableModel tabla_auxiliar = new DefaultTableModel();
-            tabla_auxiliar.addColumn("");
+            tabla_auxiliar.addColumn(nombre_tabla);
 
             for (int i = 0; i < criterios.size(); i++)
                 tabla_auxiliar.addColumn(criterios.get(i));
@@ -269,7 +268,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         } else { //Matriz de alternativas por cada uno de los criterios.
             
             DefaultTableModel tabla_auxiliar = new DefaultTableModel();
-            tabla_auxiliar.addColumn("");
+            tabla_auxiliar.addColumn(nombre_tabla);
 
             for (int i = 0; i < alternativas.size(); i++)
                 tabla_auxiliar.addColumn(alternativas.get(i));
@@ -327,7 +326,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         ArrayList<Double> vector_pesos = new ArrayList<>();
         for (int i = 0; i < _autoVector.length; i++) 
             vector_pesos.add(_autoVector[i]);
-        
         //NORMALIZAR EL AUTOVECTOR. --> NO HABRÍA PORQUÉ NORMALIZARLO.
         ArrayList<Double> v_pesos_norm = normalizarPesos(vector_pesos);
         
@@ -423,11 +421,9 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     
     public void metodo_autoValor(){
         ArrayList<Double> v_pesos_c_c = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-        System.out.println(v_pesos_c_c);
         ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
         for (int i = 0; i < criterios.size(); i++)
             matriz_pesos_norm_a_c.add(calcula_pesos_CI_CR(vector_matrices_a_c.get(i), alternativas.size(), alternativas.size()));
-        System.out.println(matriz_pesos_norm_a_c);
         obtenerRanking(v_pesos_c_c, matriz_pesos_norm_a_c, true);
     }
     
