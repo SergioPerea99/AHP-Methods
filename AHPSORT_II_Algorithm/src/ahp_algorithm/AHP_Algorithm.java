@@ -9,6 +9,8 @@ package ahp_algorithm;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import org.apache.commons.math3.linear.EigenDecomposition;
@@ -34,6 +36,29 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private RealVector autoVector;
     private Double[] CR_SAATY = {0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49}; 
     private Boolean ComparadosCriterios = false;
+    
+    
+    //DATOS ESTÁTICOS
+    ArrayList<ArrayList<ArrayList<Double>>> criterios_prioridades_locales = new ArrayList<>();
+        //CRITERIO 1
+    private Double[] vector_RPs_CPs_cr1 = {0.0, 20.0, 41.2, 100.0, 82.4, 160.0, 123.6, 164.8, 206.0 };
+    private Double[] vector_prio_local_cr1 = {0.336, 0.277, 0.132, 0.058, 0.086, 0.029, 0.032, 0.026, 0.023};
+        //CRITERIO 2
+    private Double[] vector_RPs_CPs_cr2 = {0.0, 5000.0, 50914.4, 95000.0, 101828.8, 180000.0, 152743.2, 203657.6, 254573.0};
+    private Double[] vector_prio_local_cr2 = {0.32, 0.261, 0.139, 0.075, 0.074, 0.032, 0.047, 0.031, 0.022};
+        //CRITERIO 3
+    private Double[] vector_RPs_CPs_cr3 = {0.0, 5000.0, 7025.4, 19000.0, 14050.8, 27000.0, 21076.2, 28101.6, 35127.0};
+    private Double[] vector_prio_local_cr3 = {0.459, 0.138, 0.124, 0.063, 0.069, 0.04, 0.048, 0.034, 0.026};
+        //CRITERIO 4
+    private Double[] vector_RPs_CPs_cr4 = {0.0, 300.0, 764.8, 1800.0, 1529.6, 2500.0, 2294.4, 3059.2, 3824.0};
+    private Double[] vector_prio_local_cr4 = {0.308, 0.259, 0.149, 0.066, 0.071, 0.034, 0.06, 0.032, 0.023};
+        //CRITERIO 5
+    private Double[] vector_RPs_CPs_cr5 = {0.00, 300.0, 321.6, 600.0, 643.2, 900.0, 964.8, 1286.4, 1608.0};
+    private Double[] vector_prio_local_cr5 = {0.385, 0.262, 0.112, 0.07, 0.062, 0.035, 0.033, 0.023, 0.018};
+    
+    
+    //Matriz de prioridades locales y globales 
+    ArrayList<ArrayList<Double>> matriz_prioridades_locales_globales = new ArrayList<>();
     
     //ATRIBUTO FINAL
     private ArrayList<String> ranking_alternativas;
@@ -69,6 +94,8 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             }
         }
         );
+        generar_prioridadesLocales_criterios();
+        
     }
     
     public void setAHP(AHP_Interface _interfaz, ArrayList<String> _alternativas, ArrayList<String> _criterios){
@@ -147,7 +174,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             
             //Una vez termina de obtener la matriz, calcula el Wj.
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-            generarMatriz(false, criterios.get(contador_pasos));
+            obtener_prioridades_locales_globales(pesosCriterios);
+            interfaz.setVisible(true);
+            dispose();
+            //generarMatriz(false, criterios.get(contador_pasos));
             contador_pasos++;
         }
         
@@ -331,12 +361,15 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         ArrayList<Double> vector_pesos = new ArrayList<>();
         for (int i = 0; i < _autoVector.length; i++) 
             vector_pesos.add(_autoVector[i]);
+        
         //NORMALIZAR EL AUTOVECTOR. --> NO HABRÍA PORQUÉ NORMALIZARLO.
         ArrayList<Double> v_pesos_norm = normalizarPesos(vector_pesos);
         
         if (matriz.size() >= 3)
             CR = CI / CR_SAATY[matriz.size() - 3]; //SI ES MENOR QUE 3 --> NO PUEDE EXISTIR INCONSISTENCIA.
-        
+        System.out.println("CR = "+CR);
+        System.out.println("VECTOR DE CRITERIOS = "+criterios);
+        System.out.println("VECTOR DE PESOS = "+vector_pesos);
         v_CI.add(CI);
         v_CR.add(CR);
         return v_pesos_norm; //DEVOLVER EL VECTOR DE PESOS NORMALIZADOS.
@@ -353,126 +386,143 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         return v_pesos;
     }
     
-    public void metodo_aproximacion(){
-        
-        //VARIABLES DE USO GENERAL.
-        Double suma_pesos;
-        
-        //1. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRIZ DE COMPARACIÓN ENTRE CRITERIOS.
-        ArrayList<Double> v_pesos_c_c = new ArrayList<>();
-        for (int i = 0; i < matriz_c_c.size(); i++) {
-            suma_pesos = 0.0;
-            for (int j = 0; j < matriz_c_c.size(); j++) //Para cada fila, se suma los pesos de toda las columnas.
-                suma_pesos += matriz_c_c.get(i).get(j);
-            v_pesos_c_c.add(suma_pesos); //Se añade esa suma de pesos al vector de pesos.
-        }
-        ArrayList<Double> v_pesos_norm_c_c = normalizarPesos(v_pesos_c_c);
-        
-        //2. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRICES DE COMPARACIÓN DE ALTERNATIVAS PARA CADA CRITERIO.
-        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
-        ArrayList<Double> v_pesos_a_c, v_pesos_norm_a_c;
-        for (int a = 0; a < alternativas.size(); a++) {
-            v_pesos_a_c= new ArrayList<>();
-            for (int c = 0; c < criterios.size(); c++) {
-                suma_pesos = 0.0;
-                for (int j = 0; j < alternativas.size(); j++)
-                    suma_pesos += vector_matrices_a_c.get(c).get(a).get(j);
-                
-                v_pesos_a_c.add(suma_pesos);
+    
+    private void ordenarVectores(Double[] vector){
+        Double aux;
+        for (int i = 0; i < vector.length-1; i++) {
+            for (int j = 0; j < vector.length; j++) {
+                if (vector[i] > vector[j]){
+                    aux = vector[i];
+                    vector[i] = vector[j];
+                    vector[j] = aux;
+                }
             }
-            v_pesos_norm_a_c = normalizarPesos(v_pesos_a_c);
-            matriz_pesos_norm_a_c.add(v_pesos_norm_a_c);
         }
-        
-        //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
-        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c, false);
     }
     
-    public void metodo_mediaGeometrica(){
+    
+    //----------- PREPARACIÓN DE LAS TABLAS DE PRIORIDADES LOCALES PARA LOS CRITERIOS ------------
+    
+    private void generar_prioridadesLocales_criterios(){
         
-        //VARIABLES DE USO GENERAL.
-        Double producto_pesos;
+        ArrayList<Double> v1 = new ArrayList<>();
         
-        //1. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRIZ DE COMPARACIÓN ENTRE CRITERIOS.
-        ArrayList<Double> v_pesos_c_c = new ArrayList<>();
-        for (int i = 0; i < criterios.size(); i++) {
-            producto_pesos = 1.0;
-            for (int j = 0; j < criterios.size(); j++) //Para cada fila, se suma los pesos de toda las columnas.
-                producto_pesos *= matriz_c_c.get(i).get(j);
-            producto_pesos = (double) Math.pow(producto_pesos, ((double) 1 / (double)criterios.size())); //Aplicamos la raiz n-ésima, siendo n = nºcriterios.
-            v_pesos_c_c.add(producto_pesos); //Se añade al vector de pesos.
-        }
-        ArrayList<Double> v_pesos_norm_c_c = normalizarPesos(v_pesos_c_c);
+        //CRITERIO 1
+        criterios_prioridades_locales.add(new ArrayList<>());
+        v1.clear(); v1.addAll(Arrays.asList(vector_RPs_CPs_cr1)); Collections.sort(v1);
+        criterios_prioridades_locales.get(0).add(new ArrayList<>(v1)); //Añado espacio para el RP/CP.
+        v1.clear(); v1.addAll(Arrays.asList(vector_prio_local_cr1)); Collections.sort(v1); Collections.reverse(v1);
+        criterios_prioridades_locales.get(0).add(new ArrayList<>(v1)); //Añado espacio para el de Prioridades locales.
         
-        //2. CALCULAR LOS PESOS Y NORMALIZARLOS PARA MATRICES DE COMPARACIÓN DE ALTERNATIVAS PARA CADA CRITERIO.
-        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
-        ArrayList<Double> v_pesos_a_c, v_pesos_norm_a_c;
-        for (int a = 0; a < alternativas.size(); a++) {
-            v_pesos_a_c= new ArrayList<>();
-            for (int c = 0; c < criterios.size(); c++) {
-                producto_pesos = 1.0;
-                for (int j = 0; j < alternativas.size(); j++)
-                    producto_pesos *= vector_matrices_a_c.get(c).get(a).get(j);
-                producto_pesos = (double) Math.pow(producto_pesos, (double)(1.0 / alternativas.size())); //Aplicamos la raiz n-ésima, siendo n = nºalternativas.
-                v_pesos_a_c.add(producto_pesos);
-            }
-            v_pesos_norm_a_c = normalizarPesos(v_pesos_a_c);
-            matriz_pesos_norm_a_c.add(v_pesos_norm_a_c);
-        }
+        ArrayList<Double> v2 = new ArrayList<>();
+        //CRITERIO 2
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v2.clear(); v2.addAll(Arrays.asList(vector_RPs_CPs_cr2)); Collections.sort(v2);
+        criterios_prioridades_locales.get(1).add(new ArrayList<>(v2)); //Añado espacio para el RP/CP.
+        v2.clear(); v2.addAll(Arrays.asList(vector_prio_local_cr2)); Collections.sort(v2); Collections.reverse(v2);
+        criterios_prioridades_locales.get(1).add(new ArrayList<>(v2)); //Añado espacio para el de Prioridades locales.
         
-        //3.CÁLCULO DEL RANKING A PARTIR DEL MÉTODO DE APROXIMACIÓN.
-        obtenerRanking(v_pesos_norm_c_c, matriz_pesos_norm_a_c, false);
+        ArrayList<Double> v3 = new ArrayList<>();
+        //CRITERIO 3
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v3.clear(); v3.addAll(Arrays.asList(vector_RPs_CPs_cr3)); Collections.sort(v3);
+        criterios_prioridades_locales.get(2).add(new ArrayList<>(v3)); //Añado espacio para el RP/CP.
+        v3.clear(); v3.addAll(Arrays.asList(vector_prio_local_cr3)); Collections.sort(v3); Collections.reverse(v3);
+        criterios_prioridades_locales.get(2).add(new ArrayList<>(v3)); //Añado espacio para el de Prioridades locales.
+        
+        ArrayList<Double> v4 = new ArrayList<>();
+        //CRITERIO 4
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v4.clear(); v4.addAll(Arrays.asList(vector_RPs_CPs_cr4)); Collections.sort(v4);
+        criterios_prioridades_locales.get(3).add(new ArrayList<>(v4)); //Añado espacio para el RP/CP.
+        v4.clear(); v4.addAll(Arrays.asList(vector_prio_local_cr4)); Collections.sort(v4); Collections.reverse(v4);
+        criterios_prioridades_locales.get(3).add(new ArrayList<>(v4)); //Añado espacio para el de Prioridades locales.
+        
+        ArrayList<Double> v5 = new ArrayList<>();
+        //CRITERIO 5
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v5.clear(); v5.addAll(Arrays.asList(vector_RPs_CPs_cr5)); Collections.sort(v5);
+        criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el RP/CP.
+        v5.clear(); v5.addAll(Arrays.asList(vector_prio_local_cr5)); Collections.sort(v5); Collections.reverse(v5);
+        criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el de Prioridades locales.
+        
+        System.out.println(criterios_prioridades_locales);
     }
     
-    public void metodo_autoValor(){
-        ArrayList<Double> v_pesos_c_c = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-        ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c = new ArrayList<>();
-        for (int i = 0; i < criterios.size(); i++)
-            matriz_pesos_norm_a_c.add(calcula_pesos_CI_CR(vector_matrices_a_c.get(i), alternativas.size(), alternativas.size()));
-        obtenerRanking(v_pesos_c_c, matriz_pesos_norm_a_c, true);
+    private void obtener_prioridades_locales_globales(ArrayList<Double> pesos_criterios){
+        ArrayList<Double> v_1 = new ArrayList<>();
+        Double[] v1 = {23.0, 17284.0, 2101.0, 387.0, 267.0, 0.0};
+        v_1.clear(); v_1.addAll(Arrays.asList(v1));
+        matriz_prioridades_locales_globales.add(v_1);
+        
+        ArrayList<Double> v_2 = new ArrayList<>();
+        Double[] v2 = {61.0, 26571.0, 3945.0, 722.0, 818.0, 0.0};
+        v_2.clear(); v_2.addAll(Arrays.asList(v2));
+        matriz_prioridades_locales_globales.add(v_2);
+        
+        ArrayList<Double> v_3 = new ArrayList<>();
+        Double[] v3 = {20.0, 14508.0, 1691.0, 219.0, 148.0, 0.0};
+        v_3.clear(); v_3.addAll(Arrays.asList(v3));
+        matriz_prioridades_locales_globales.add(v_3);
+        
+        ArrayList<Double> v_4 = new ArrayList<>();
+        Double[] v4 = {32.0, 19139.0, 2299.0, 368.0, 622.0, 0.0};
+        v_4.clear(); v_4.addAll(Arrays.asList(v4));
+        matriz_prioridades_locales_globales.add(v_4);
+        
+        ArrayList<Double> v_5 = new ArrayList<>();
+        Double[] v5 = {8.0, 11222.0, 1409.0, 156.0, 139.0, 0.0};
+        v_5.clear(); v_5.addAll(Arrays.asList(v5));
+        matriz_prioridades_locales_globales.add(v_5);
+        
+        ArrayList<Double> v_6 = new ArrayList<>();
+        Double[] v6 = {17.0, 7548.0, 718.0, 175.0, 129.0, 0.0};
+        v_6.clear(); v_6.addAll(Arrays.asList(v6));
+        matriz_prioridades_locales_globales.add(v_6);
+        
+        ArrayList<Double> v_7 = new ArrayList<>();
+        Double[] v7 = {58.0, 46137.0, 6377.0, 830.0, 934.0, 0.0};
+        v_7.clear(); v_7.addAll(Arrays.asList(v7));
+        matriz_prioridades_locales_globales.add(v_7);
+        
+        ArrayList<Double> v_8 = new ArrayList<>();
+        Double[] v8 = {86.0, 52849.0, 9662.0, 716.0, 415.0, 0.0};
+        v_8.clear(); v_8.addAll(Arrays.asList(v8));
+        matriz_prioridades_locales_globales.add(v_8);
+        
+        
+        boolean salir = false;
+        double sum_prio_localesXpesos_crit;
+        //RELLENAR TABLA DE PRIORIDADES LOCALES Y GLOBALES. --> REUTILIZAR LA MATRIZ ANTERIOR.
+        for (int i = 0; i < matriz_prioridades_locales_globales.size(); i++) { //Primero recorre la Alternativa...
+            sum_prio_localesXpesos_crit = 0.0;
+            for (int j = 0; j < matriz_prioridades_locales_globales.get(i).size(); j++) { //Segundo recorre cada valor de esa alternativa para el criterio j...
+                salir = false;
+                if (j < matriz_prioridades_locales_globales.get(i).size() - 1){
+                    for (int l = 0; l < criterios_prioridades_locales.get(j).get(0).size() && !salir; l++) { //
+                        if (matriz_prioridades_locales_globales.get(i).get(j) < criterios_prioridades_locales.get(j).get(0).get(l)){ //Ha encontrado 1 valor que es justo el mayor al valor de la alternativa para el criterio.
+                            System.out.print(matriz_prioridades_locales_globales.get(i).get(j) +" -----> ");
+                            matriz_prioridades_locales_globales.get(i).set(j,  criterios_prioridades_locales.get(j).get(1).get(l-1) + ( (criterios_prioridades_locales.get(j).get(1).get(l) - criterios_prioridades_locales.get(j).get(1).get(l-1)) / (criterios_prioridades_locales.get(j).get(0).get(l) - criterios_prioridades_locales.get(j).get(0).get(l-1))) * (matriz_prioridades_locales_globales.get(i).get(j) - criterios_prioridades_locales.get(j).get(0).get(l-1)));
+                            sum_prio_localesXpesos_crit += matriz_prioridades_locales_globales.get(i).get(j) * pesos_criterios.get(j);
+                            salir = true;
+                            System.out.println(matriz_prioridades_locales_globales.get(i).get(j));
+                        }
+                    }
+                }
+                else{
+                    //Una vez recorrido todo el proceso de la Alternativa "i" para todos los criterios ---> calculo su peso global y lo añado a la columna final.
+                    matriz_prioridades_locales_globales.get(i).set(j, sum_prio_localesXpesos_crit);
+                    System.out.println("Peso global de la alternativa "+i+" = "+matriz_prioridades_locales_globales.get(i).get(j));
+                }
+            }
+        }
+        
+        System.out.println("Nº filas = "+matriz_prioridades_locales_globales.size()+" ::: Nºcolumnas = "+matriz_prioridades_locales_globales.get(0).size());
+        System.out.println(matriz_prioridades_locales_globales);
     }
     
-    private void obtenerRanking(ArrayList<Double> v_pesos_norm_c_c, ArrayList<ArrayList<Double>> matriz_pesos_norm_a_c, Boolean metodo_autovalor) {
-        ranking_alternativas.clear();
-        ArrayList<Double> ranking_alternativas = new ArrayList<>();
-        Double sum;
-        //OBTENER VALORES DEL RANKING
-        for (int a = 0; a < alternativas.size(); a++) {
-            sum = 0.0;
-            if(!metodo_autovalor){
-                for (int c = 0; c < criterios.size(); c++)
-                    sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(a).get(c);
-            }else{
-                for (int c = 0; c < criterios.size(); c++)
-                    sum += v_pesos_norm_c_c.get(c) * matriz_pesos_norm_a_c.get(c).get(a);
-            }
-            ranking_alternativas.add(sum);
-        }
-        System.out.println(ranking_alternativas);
-        
-        //ORDENAR EL RANKING --> AL SER POCAS ALTERNATIVAS HACEMOS MÉTODO BURBUJA (n^2)
-        Double max_valor;
-        int pos;
-        for (int a = 0; a < ranking_alternativas.size(); a++) { 
-            max_valor = -1.0;
-            pos = -1; 
-            for (int i = 0; i < ranking_alternativas.size(); i++) {
-                if (ranking_alternativas.get(i) > max_valor){
-                    max_valor = ranking_alternativas.get(i);
-                    pos = i;
-                }  
-            }
-            this.ranking_alternativas.add(alternativas.get(pos));
-            ranking_alternativas.set(pos, -1.0); //ANULO EL VALOR DE RANKING DE LA ALTERNATIVA QUE SE ACABA DE ESCOGER.
-        }
-        
-        System.out.println(this.ranking_alternativas);
-        
-    }
+    //----------- MÉTODOS DE CLASIFICACIÓN A LA CLASE CORRESPONDIENTE ---------------
     
-    public ArrayList<String> getRanking_alternativas() {
-        return ranking_alternativas;
-    }
-
+    
     
 }
