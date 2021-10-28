@@ -56,6 +56,11 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     private Double[] vector_RPs_CPs_cr5 = {0.00, 300.0, 321.6, 600.0, 643.2, 900.0, 964.8, 1286.4, 1608.0};
     private Double[] vector_prio_local_cr5 = {0.385, 0.262, 0.112, 0.07, 0.062, 0.035, 0.033, 0.023, 0.018};
     
+        //CP PRIORIDADES LOCALES.
+    Double[] cp1 = {0.277, 0.261, 0.138, 0.259, 0.262}; //Prioridades locales de CP1 por cada criterio.
+    Double[] cp2 = {0.058, 0.075, 0.063, 0.066, 0.07}; //Prioridades locales de CP2 por cada criterio.
+    Double[] cp3 = {0.029, 0.032, 0.04, 0.034, 0.035}; //Prioridades locales de CP3 por cada criterio.
+    ArrayList<Double> v_cp1, v_cp2, v_cp3;
     
     //Matriz de prioridades locales y globales 
     ArrayList<ArrayList<Double>> matriz_prioridades_locales_globales = new ArrayList<>();
@@ -94,7 +99,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             }
         }
         );
-        generar_prioridadesLocales_criterios();
+        calcula_prioridades_criterios();
         
     }
     
@@ -174,7 +179,9 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             
             //Una vez termina de obtener la matriz, calcula el Wj.
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
-            obtener_prioridades_locales_globales(pesosCriterios);
+            calcula_prioridades_alternativas(pesosCriterios);
+            calcula_prioridades_CP(pesosCriterios);
+            mostrarClasificaicion_alternativas_clases();
             interfaz.setVisible(true);
             dispose();
             //generarMatriz(false, criterios.get(contador_pasos));
@@ -387,23 +394,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     }
     
     
-    private void ordenarVectores(Double[] vector){
-        Double aux;
-        for (int i = 0; i < vector.length-1; i++) {
-            for (int j = 0; j < vector.length; j++) {
-                if (vector[i] > vector[j]){
-                    aux = vector[i];
-                    vector[i] = vector[j];
-                    vector[j] = aux;
-                }
-            }
-        }
-    }
-    
     
     //----------- PREPARACIÓN DE LAS TABLAS DE PRIORIDADES LOCALES PARA LOS CRITERIOS ------------
     
-    private void generar_prioridadesLocales_criterios(){
+    private void calcula_prioridades_criterios(){
         
         ArrayList<Double> v1 = new ArrayList<>();
         
@@ -446,10 +440,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         v5.clear(); v5.addAll(Arrays.asList(vector_prio_local_cr5)); Collections.sort(v5); Collections.reverse(v5);
         criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el de Prioridades locales.
         
-        System.out.println(criterios_prioridades_locales);
+        System.out.println("Prioridades locales para los criterios: "+criterios_prioridades_locales);
     }
     
-    private void obtener_prioridades_locales_globales(ArrayList<Double> pesos_criterios){
+    private void calcula_prioridades_alternativas(ArrayList<Double> pesos_criterios){
         ArrayList<Double> v_1 = new ArrayList<>();
         Double[] v1 = {23.0, 17284.0, 2101.0, 387.0, 267.0, 0.0};
         v_1.clear(); v_1.addAll(Arrays.asList(v1));
@@ -493,7 +487,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         
         boolean salir = false;
         double sum_prio_localesXpesos_crit;
-        //RELLENAR TABLA DE PRIORIDADES LOCALES Y GLOBALES. --> REUTILIZAR LA MATRIZ ANTERIOR.
+        
         for (int i = 0; i < matriz_prioridades_locales_globales.size(); i++) { //Primero recorre la Alternativa...
             sum_prio_localesXpesos_crit = 0.0;
             for (int j = 0; j < matriz_prioridades_locales_globales.get(i).size(); j++) { //Segundo recorre cada valor de esa alternativa para el criterio j...
@@ -521,8 +515,54 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         System.out.println(matriz_prioridades_locales_globales);
     }
     
-    //----------- MÉTODOS DE CLASIFICACIÓN A LA CLASE CORRESPONDIENTE ---------------
+    private void calcula_prioridades_CP(ArrayList<Double> pesosCriterios){
+        Double sum  = 0.0;
+        
+        System.out.println("");
+        System.out.println("");
+        
+        //PARTIENDO DE LOS VALORES DE LAS PRIORIDADES LOCALES QUE YA APARECEN EN LA TABLA 6. SÓLO NECESITA CALCULAR LA PRIORIDAD GLOBAL DE CADA CP.
+        v_cp1 = new ArrayList<>();
+        v_cp1.addAll(Arrays.asList(cp1));
+        for (int i = 0; i < v_cp1.size(); i++)
+            sum += v_cp1.get(i) * pesosCriterios.get(i);
+        v_cp1.add(sum);
+        System.out.println("Prioridad CP1 = "+v_cp1);
+        
+        v_cp2 = new ArrayList<>();
+        v_cp2.addAll(Arrays.asList(cp2));
+        sum = 0.0;
+        for (int i = 0; i < v_cp2.size(); i++)
+            sum += v_cp2.get(i) * pesosCriterios.get(i);
+        v_cp2.add(sum);
+        System.out.println("Prioridad CP2 = "+v_cp2);
+        
+        
+        v_cp3 = new ArrayList<>();
+        v_cp3.addAll(Arrays.asList(cp3));
+        sum = 0.0;
+        for (int i = 0; i < v_cp3.size(); i++)
+            sum += v_cp3.get(i) * pesosCriterios.get(i);
+        v_cp3.add(sum);
+        System.out.println("Prioridad CP3 = "+v_cp3);
+        
+        System.out.println("");
+        System.out.println("");
+    }
     
+    
+    //----------- MÉTODOS DE CLASIFICACIÓN A LA CLASE CORRESPONDIENTE ---------------
+    private void mostrarClasificaicion_alternativas_clases(){
+        for (int i = 0; i < alternativas.size(); i++) {
+            System.out.print(alternativas.get(i)+" --> P.Global = "+matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1)+" ::: Clase = ");
+            if (matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1) > v_cp3.get(v_cp3.size()-1))
+                System.out.println("Clase 3");
+            else if (matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1) > v_cp2.get(v_cp2.size()-1))
+                System.out.println("Clase 2");
+            else
+                System.out.println("Clase 1");
+        }
+    }
     
     
 }
