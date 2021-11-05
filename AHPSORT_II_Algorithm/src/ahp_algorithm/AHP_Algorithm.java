@@ -123,7 +123,6 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             }
         }
         );
-        calcula_prioridades_criterios_ej1();
         
     }
     
@@ -202,12 +201,16 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             ObtenerMatriz(matriz_c_c, criterios.size(), criterios.size());
             
             //Una vez termina de obtener la matriz, calcula el Wj.
+            
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
             System.out.println(pesosCriterios);
+            
+            /*calcula_prioridades_criterios_ej1();
             calcula_prioridades_alternativas_ej1(pesosCriterios);
             calcula_prioridades_CP_ej1(pesosCriterios);
-            mostrarClasificaicion_alternativas_clases_ej1();
+            mostrarClasificaicion_alternativas_clases_ej1();*/
             
+            calcula_prioridades_criterios_ej2();
             calcula_prioridades_alternativas_ej2(pesosCriterios);
             calcula_prioridades_CP_ej2(pesosCriterios);
             mostrarClasificaicion_alternativas_clases_ej2();
@@ -468,7 +471,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
         criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
         v5.clear(); v5.addAll(Arrays.asList(vector_RPs_CPs_cr5_ej1)); Collections.sort(v5);
         criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el RP/CP.
-        v5.clear(); v5.addAll(Arrays.asList(vector_prio_local_cr5_ej2)); Collections.sort(v5); Collections.reverse(v5);
+        v5.clear(); v5.addAll(Arrays.asList(vector_prio_local_cr5_ej1)); Collections.sort(v5); Collections.reverse(v5);
         criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el de Prioridades locales.
         
         System.out.println("Prioridades locales para los criterios: "+criterios_prioridades_locales);
@@ -524,10 +527,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             for (int j = 0; j < matriz_prioridades_locales_globales.get(i).size(); j++) { //Segundo recorre cada valor de esa alternativa para el criterio j...
                 salir = false;
                 if (j < matriz_prioridades_locales_globales.get(i).size() - 1){
-                    for (int l = 0; l < criterios_prioridades_locales.get(j).get(0).size() && !salir; l++) { //
-                        if (matriz_prioridades_locales_globales.get(i).get(j) < criterios_prioridades_locales.get(j).get(0).get(l)){ //Ha encontrado 1 valor que es justo el mayor al valor de la alternativa para el criterio.
+                    for (int c = 0; c < criterios_prioridades_locales.get(j).get(0).size() && !salir; c++) { //
+                        if (matriz_prioridades_locales_globales.get(i).get(j) < criterios_prioridades_locales.get(j).get(0).get(c)){ //Ha encontrado 1 valor que es justo el mayor al valor de la alternativa para el criterio.
                             System.out.print(matriz_prioridades_locales_globales.get(i).get(j) +" -----> ");
-                            matriz_prioridades_locales_globales.get(i).set(j,  criterios_prioridades_locales.get(j).get(1).get(l-1) + ( (criterios_prioridades_locales.get(j).get(1).get(l) - criterios_prioridades_locales.get(j).get(1).get(l-1)) / (criterios_prioridades_locales.get(j).get(0).get(l) - criterios_prioridades_locales.get(j).get(0).get(l-1))) * (matriz_prioridades_locales_globales.get(i).get(j) - criterios_prioridades_locales.get(j).get(0).get(l-1)));
+                            matriz_prioridades_locales_globales.get(i).set(j,  criterios_prioridades_locales.get(j).get(1).get(c-1) + ( (criterios_prioridades_locales.get(j).get(1).get(c) - criterios_prioridades_locales.get(j).get(1).get(c-1)) / (criterios_prioridades_locales.get(j).get(0).get(c) - criterios_prioridades_locales.get(j).get(0).get(c-1))) * (matriz_prioridades_locales_globales.get(i).get(j) - criterios_prioridades_locales.get(j).get(0).get(c-1)));
                             sum_prio_localesXpesos_crit += matriz_prioridades_locales_globales.get(i).get(j) * pesos_criterios.get(j);
                             salir = true;
                             System.out.println(matriz_prioridades_locales_globales.get(i).get(j));
@@ -600,52 +603,125 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     /** ---------------------- EJERCICIO 2 --------------------------------*/
     
     
+    private void calcula_prioridades_criterios_ej2(){
+        
+        ArrayList<Double> v1 = new ArrayList<>();
+        criterios_prioridades_locales.clear();
+        //CRITERIO 1
+        criterios_prioridades_locales.add(new ArrayList<>());
+        v1.clear(); v1.addAll(Arrays.asList(vector_RPs_CPs_cr1_ej2)); Collections.sort(v1);
+        criterios_prioridades_locales.get(0).add(new ArrayList<>(v1)); //Añado espacio para el RP/CP.
+        v1.clear(); v1.addAll(Arrays.asList(vector_prio_local_cr1_ej2)); Collections.sort(v1); Collections.reverse(v1);
+        criterios_prioridades_locales.get(0).add(new ArrayList<>(v1)); //Añado espacio para el de Prioridades locales.
+        
+        ArrayList<Double> v2 = new ArrayList<>();
+        //CRITERIO 2
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v2.clear(); v2.addAll(Arrays.asList(vector_RPs_CPs_cr2_ej2)); Collections.sort(v2);
+        criterios_prioridades_locales.get(1).add(new ArrayList<>(v2)); //Añado espacio para el RP/CP.
+        v2.clear(); v2.addAll(Arrays.asList(vector_prio_local_cr2_ej2)); Collections.sort(v2); Collections.reverse(v2);
+        criterios_prioridades_locales.get(1).add(new ArrayList<>(v2)); //Añado espacio para el de Prioridades locales.
+        
+        ArrayList<Double> v3 = new ArrayList<>();
+        //CRITERIO 3
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v3.clear(); v3.addAll(Arrays.asList(vector_RPs_CPs_cr3_ej2)); Collections.sort(v3);
+        criterios_prioridades_locales.get(2).add(new ArrayList<>(v3)); //Añado espacio para el RP/CP.
+        v3.clear(); v3.addAll(Arrays.asList(vector_prio_local_cr3_ej2)); Collections.sort(v3); Collections.reverse(v3);
+        criterios_prioridades_locales.get(2).add(new ArrayList<>(v3)); //Añado espacio para el de Prioridades locales.
+        
+        ArrayList<Double> v4 = new ArrayList<>();
+        //CRITERIO 4
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v4.clear(); v4.addAll(Arrays.asList(vector_RPs_CPs_cr4_ej2)); Collections.sort(v4);
+        criterios_prioridades_locales.get(3).add(new ArrayList<>(v4)); //Añado espacio para el RP/CP.
+        v4.clear(); v4.addAll(Arrays.asList(vector_prio_local_cr4_ej2)); Collections.sort(v4); Collections.reverse(v4);
+        criterios_prioridades_locales.get(3).add(new ArrayList<>(v4)); //Añado espacio para el de Prioridades locales.
+        
+        ArrayList<Double> v5 = new ArrayList<>();
+        //CRITERIO 5
+        criterios_prioridades_locales.add(new ArrayList<>()); //Añado espacio al criterio (donde poner 2 vectores: RP/CP y el de Prioridades locales)
+        v5.clear(); v5.addAll(Arrays.asList(vector_RPs_CPs_cr5_ej2)); Collections.sort(v5);
+        criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el RP/CP.
+        v5.clear(); v5.addAll(Arrays.asList(vector_prio_local_cr5_ej2)); Collections.sort(v5); Collections.reverse(v5);
+        criterios_prioridades_locales.get(4).add(new ArrayList<>(v5)); //Añado espacio para el de Prioridades locales.
+        
+        System.out.println("Prioridades locales para los criterios: "+criterios_prioridades_locales);
+    }
+    
     private void calcula_prioridades_alternativas_ej2(ArrayList<Double> pesosCriterios) {
         matriz_prioridades_locales_globales.clear(); //Limpiar los vectores del ejercicio 1.
         
-        ArrayList<Double> v_1 = new ArrayList<>(); //Almeria
-        Double[] v1 = {0.3282413, 246.66621, 29.98413025, 5.523016852, 3.810453487};
-        v_1.clear(); v_1.addAll(Arrays.asList(v1));
-        matriz_prioridades_locales_globales.add(v_1);
+        Double[] v = {
+0.21,209.57,2.02,4.16,1.44,
+0.33,183.27,12.31,4.51,2.05,
+0.20,322.00,35.19,5.74,3.43,
+0.33,244.58,29.73,5.48,3.78,
+0.12,129.56,7.65,3.17,2.12,
+0.29,149.42,11.93,2.74,1.87,
+0.32,399.87,41.33,5.68,4.33,
+0.37,406.46,46.59,3.06,2.58,
+0.03,158.14,12.76,4.10,2.07,
+0.30,93.69,6.75,2.37,1.85,
+0.49,214.38,31.83,5.83,6.60,
+0.24,254.73,21.74,4.08,2.52,
+0.32,132.78,11.82,2.96,1.91,
+0.25,184.06,21.45,2.78,1.88,
+0.24,151.98,16.99,2.53,1.00,
+0.05,159.07,14.44,1.86,1.71,
+0.32,324.49,45.65,4.86,5.78,
+0.35,209.64,25.18,4.03,6.81,
+0.12,188.62,24.12,3.40,1.46,
+0.25,174.83,3.86,5.20,1.78,
+0.15,216.25,27.15,3.01,2.68,
+0.36,111.56,7.01,3.19,1.96,
+0.26,117.30,11.16,2.72,2.00,
+0.21,167.81,10.70,2.84,0.85,
+0.44,207.96,26.11,2.68,2.06,
+0.19,150.23,9.86,4.00,2.54,
+0.09,99.18,9.77,2.61,1.50,
+0.25,391.22,53.98,5.88,2.47,
+0.36,282.94,39.11,5.09,5.73,
+0.40,248.16,30.72,3.74,1.99,
+0.58,197.75,12.95,4.57,2.08,
+0.19,112.62,7.28,2.73,1.28,
+0.20,119.07,8.49,3.95,1.26,
+0.00,103.56,3.92,3.79,1.53,
+0.34,215.14,25.30,4.23,3.12,
+0.18,147.17,14.43,2.94,1.79,
+0.24,168.82,12.65,2.37,1.83,
+0.39,268.50,36.59,4.18,2.52,
+0.17,165.48,11.94,2.84,1.09,
+0.13,126.28,6.36,3.11,1.75,
+0.44,272.48,49.82,3.69,2.14,
+0.00,127.67,7.42,1.91,1.24,
+0.32,289.89,40.86,4.43,3.88,
+0.74,76.42,2.88,2.73,0.96,
+0.36,235.40,24.98,2.93,2.61,
+0.38,272.84,29.64,4.92,3.23,
+0.31,169.15,9.13,2.23,0.56,
+0.18,270.95,5.08,3.37,1.37,
+0.23,135.12,7.38,2.59,1.86,
+0.14,175.48,15.78,3.84,2.24,
+1.06,187.86,66.27,18.71,26.72,
+0.93,294.01,56.67,19.28,7.43
+};
         
-        ArrayList<Double> v_2 = new ArrayList<>(); //Cádiz
-        Double[] v2 = {0.488595696, 212.8274793, 31.59852492, 5.783050695,6.551988184};
-        v_2.clear(); v_2.addAll(Arrays.asList(v2));
-        matriz_prioridades_locales_globales.add(v_2);
+        for (int i = 0; i < v.length; i += 5) {
+            ArrayList<Double> v_1 = new ArrayList<>();
+            for (int j = i; j < i+5; j++) {
+                v_1.add(v[j]);
+            }
+            matriz_prioridades_locales_globales.add(v_1);
+        }
         
-        ArrayList<Double> v_3 = new ArrayList<>(); //Córdoba
-        Double[] v3 = {0.253858974, 184.1492995, 21.46377623, 2.779755762, 1.878556406};
-        v_3.clear(); v_3.addAll(Arrays.asList(v3));
-        matriz_prioridades_locales_globales.add(v_3);
-        
-        ArrayList<Double> v_4 = new ArrayList<>(); //Granada
-        Double[] v4 = {0.349153249, 208.8263759, 25.08447872, 4.015262361, 6.786666274};
-        v_4.clear(); v_4.addAll(Arrays.asList(v4));
-        matriz_prioridades_locales_globales.add(v_4);
-        
-        ArrayList<Double> v_5 = new ArrayList<>(); //Huelva
-        Double[] v5 = {0.153370999, 215.1411684, 27.01246715, 2.990734475, 2.664821102};
-        v_5.clear(); v_5.addAll(Arrays.asList(v5));
-        matriz_prioridades_locales_globales.add(v_5);
-        
-        ArrayList<Double> v_6 = new ArrayList<>(); //Jaén
-        Double[] v6 = {0.266044019, 118.1235446, 11.2364474, 2.738688434, 2.018804617};
-        v_6.clear(); v_6.addAll(Arrays.asList(v6));
-        matriz_prioridades_locales_globales.add(v_6);
-        
-        ArrayList<Double> v_7 = new ArrayList<>(); //Málaga
-        Double[] v7 = {0.352497659, 280.3997323, 38.75650981, 5.044363046, 5.676427813};
-        v_7.clear(); v_7.addAll(Arrays.asList(v7));
-        matriz_prioridades_locales_globales.add(v_7);
-        
-        ArrayList<Double> v_8 = new ArrayList<>(); //Sevilla
-        Double[] v8 = {0.442551878, 271.9584207, 49.72018886, 3.684501679, 2.135570107};
-        v_8.clear(); v_8.addAll(Arrays.asList(v8));
-        matriz_prioridades_locales_globales.add(v_8);
+        System.out.println(matriz_prioridades_locales_globales);
         
         
         boolean salir;
         double sum_prio_localesXpesos_crit;
+        
+        
         
         for (int i = 0; i < matriz_prioridades_locales_globales.size(); i++) { //Primero recorre la Alternativa...
             sum_prio_localesXpesos_crit = 0.0;
@@ -708,7 +784,7 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     
     
     private void mostrarClasificaicion_alternativas_clases_ej2(){
-        System.out.println("\n\n\n\n");
+        System.out.println("\n\n\n\n CLASIFICACIÓN GLOBAL DE LAS ALTERNATIVAS RESPECTO A LOS CPs GLOBALES. \n");
         
         double dif1 = 0.0, dif2 = 0.0, dif3 = 0.0;
         for (int i = 0; i < alternativas.size(); i++) {
@@ -723,6 +799,30 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             else
                 System.out.println("Clase 1 ---- "+dif1);
         }
+        
+        
+        System.out.println("\n\n\n CLASIFICACIÓN LOCAL POR CADA UNO DE LOS CRITERIOS RESPECTO A LOS CPs CORRESPONDIENTES A CADA CRITERIO.");
+        dif1 =  dif2 = dif3 = 0.0;
+        for (int c = 0; c < criterios.size(); c++){
+            System.out.println("CRITERIO --> "+criterios.get(c)+":");
+            for (int i = 0; i < alternativas.size(); i++) {
+                System.out.print(alternativas.get(i)+" --> P.Global = "+matriz_prioridades_locales_globales.get(i).get(c)+" ::: Clase = ");
+                dif3 = Math.abs(matriz_prioridades_locales_globales.get(i).get(c) - v_cp3_ej2.get(c));
+                dif2 = Math.abs(matriz_prioridades_locales_globales.get(i).get(c) - v_cp2_ej2.get(c));
+                dif1 = Math.abs(matriz_prioridades_locales_globales.get(i).get(c) - v_cp1_ej2.get(c));
+                if (dif3 < dif2 && dif3 < dif1)
+                    System.out.println("Clase 3 ---- "+dif3);
+                else if (dif2 < dif1)
+                    System.out.println("Clase 2 ---- "+dif2);
+                else
+                    System.out.println("Clase 1 ---- "+dif1);
+            }
+        }
+        
+        
     }
+    
+    
+    
     
 }
