@@ -205,10 +205,10 @@ public class AHP_Algorithm extends javax.swing.JFrame {
             pesosCriterios = calcula_pesos_CI_CR(matriz_c_c,matriz_c_c.size(), matriz_c_c.size());
             System.out.println(pesosCriterios);
             
-            /*calcula_prioridades_criterios_ej1();
-            calcula_prioridades_alternativas_ej1(pesosCriterios);
-            calcula_prioridades_CP_ej1(pesosCriterios);
-            mostrarClasificaicion_alternativas_clases_ej1();*/
+//            calcula_prioridades_criterios_ej1();
+//            calcula_prioridades_alternativas_ej1(pesosCriterios);
+//            calcula_prioridades_CP_ej1(pesosCriterios);
+//            mostrarClasificaicion_alternativas_clases_ej1();
             
             calcula_prioridades_criterios_ej2();
             calcula_prioridades_alternativas_ej2(pesosCriterios);
@@ -785,39 +785,49 @@ public class AHP_Algorithm extends javax.swing.JFrame {
     
     private void mostrarClasificaicion_alternativas_clases_ej2(){
         System.out.println("\n\n\n\n CLASIFICACIÓN GLOBAL DE LAS ALTERNATIVAS RESPECTO A LOS CPs GLOBALES. \n");
-        
+        ArrayList<String> prov_clase1 = new ArrayList<>(), prov_clase2 = new ArrayList<>(), prov_clase3 = new ArrayList<>();
         double dif1 = 0.0, dif2 = 0.0, dif3 = 0.0;
         for (int i = 0; i < alternativas.size(); i++) {
-            System.out.print(alternativas.get(i)+" --> P.Global = "+matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1)+" ::: Clase = ");
             dif3 = Math.abs(matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1) - v_cp3_ej2.get(v_cp3_ej2.size()-1));
             dif2 = Math.abs(matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1) - v_cp2_ej2.get(v_cp2_ej2.size()-1));
             dif1 = Math.abs(matriz_prioridades_locales_globales.get(i).get(matriz_prioridades_locales_globales.get(i).size()-1) - v_cp1_ej2.get(v_cp1_ej2.size()-1));
             if (dif3 < dif2 && dif3 < dif1)
-                System.out.println("Clase 3 ---- "+dif3);
+                prov_clase3.add(alternativas.get(i));
             else if (dif2 < dif1)
-                System.out.println("Clase 2 ---- "+dif2);
+                prov_clase2.add(alternativas.get(i));
             else
-                System.out.println("Clase 1 ---- "+dif1);
+                prov_clase1.add(alternativas.get(i));
         }
+        System.out.println("CLASE 1 = "+prov_clase1+"\n\n");
+        System.out.println("CLASE 2 = "+prov_clase2+"\n\n");
+        System.out.println("CLASE 3 = "+prov_clase3+"\n\n");
         
+        prov_clase1.clear(); prov_clase2.clear();prov_clase3.clear();
         
         System.out.println("\n\n\n CLASIFICACIÓN LOCAL POR CADA UNO DE LOS CRITERIOS RESPECTO A LOS CPs CORRESPONDIENTES A CADA CRITERIO.");
         dif1 =  dif2 = dif3 = 0.0;
         for (int c = 0; c < criterios.size(); c++){
+            prov_clase1.clear(); prov_clase2.clear();prov_clase3.clear();
             System.out.println("CRITERIO --> "+criterios.get(c)+":");
             for (int i = 0; i < alternativas.size(); i++) {
-                System.out.print(alternativas.get(i)+" --> P.Global = "+matriz_prioridades_locales_globales.get(i).get(c)+" ::: Clase = ");
+                //System.out.print(alternativas.get(i)+" --> P.Global = "+matriz_prioridades_locales_globales.get(i).get(c)+" ::: Clase = ");
                 dif3 = Math.abs(matriz_prioridades_locales_globales.get(i).get(c) - v_cp3_ej2.get(c));
                 dif2 = Math.abs(matriz_prioridades_locales_globales.get(i).get(c) - v_cp2_ej2.get(c));
                 dif1 = Math.abs(matriz_prioridades_locales_globales.get(i).get(c) - v_cp1_ej2.get(c));
-                if (dif3 < dif2 && dif3 < dif1)
-                    System.out.println("Clase 3 ---- "+dif3);
-                else if (dif2 < dif1)
-                    System.out.println("Clase 2 ---- "+dif2);
-                else
-                    System.out.println("Clase 1 ---- "+dif1);
+                if (dif3 < dif2 && dif3 < dif1){
+                    prov_clase3.add(alternativas.get(i));
+                }else if (dif2 < dif1){
+                    prov_clase2.add(alternativas.get(i));
+                }else{
+                    prov_clase1.add(alternativas.get(i));
+                }
             }
+            System.out.println("CLASE 1 = "+prov_clase1+"\n\n");
+            System.out.println("CLASE 2 = "+prov_clase2+"\n\n");
+            System.out.println("CLASE 3 = "+prov_clase3+"\n\n");
+            
         }
+        
         
         
     }
